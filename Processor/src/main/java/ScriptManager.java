@@ -19,7 +19,7 @@ public class ScriptManager extends UnicastRemoteObject implements ScriptManagerI
     List<Script> scripts = new ArrayList<>();
 
     protected ScriptManager(int port) throws RemoteException {
-        this.port = 2100;
+        this.port = port;
     }
 
     @Override
