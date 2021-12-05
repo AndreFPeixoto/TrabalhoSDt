@@ -18,8 +18,8 @@ public class ScriptManager extends UnicastRemoteObject implements ScriptManagerI
     int port;
     List<Script> scripts = new ArrayList<>();
 
-    protected ScriptManager(String port) throws RemoteException {
-        this.port = Integer.parseInt(port);
+    protected ScriptManager(int port) throws RemoteException {
+        this.port = 2100;
     }
 
     @Override
@@ -41,9 +41,9 @@ public class ScriptManager extends UnicastRemoteObject implements ScriptManagerI
                     int exitVal = p.waitFor();
                     if (exitVal == 0) {
                         System.out.println("Success!");
-                        Model m = new Model(id, output);
+                        Model m = new Model(port, id, output);
                         ModelManagerInterface modelManager = (ModelManagerInterface) Naming.lookup("rmi://localhost:2200/modelmanager");
-                        modelManager.sendModel(m, port);
+                        modelManager.sendModel(m);
                     }
                 } else {
                     System.out.println("Error downloading the script");

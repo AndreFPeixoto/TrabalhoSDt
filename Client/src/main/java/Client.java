@@ -19,6 +19,9 @@ public class Client {
                 Script s = new Script(fileName);
                 String id = scriptManager.processScript(s);
                 System.out.println("Process request sent to Processor");
+                ModelManagerInterface modelManager = (ModelManagerInterface) Naming.lookup("rmi://localhost:2200/modelmanager");
+                Model model = modelManager.getModel(id);
+                System.out.println(model.getOutput());
             } else {
                 System.out.println("Failed to upload script");
             }

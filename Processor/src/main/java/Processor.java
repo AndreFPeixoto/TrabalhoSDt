@@ -8,7 +8,7 @@ public class Processor {
         try {
             int port = 2100;
             Registry r = LocateRegistry.createRegistry(port);
-            ScriptManager manager = new ScriptManager(args[0]);
+            ScriptManager manager = new ScriptManager(port);
             r.rebind("scriptmanager", manager);
             System.out.println("Processor " + port + " is ready");
         } catch (RemoteException e) {
