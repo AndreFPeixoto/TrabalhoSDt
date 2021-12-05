@@ -1,3 +1,3 @@
 @echo off
-set message=Hello Andre
+set message=Hello World
 echo %message%

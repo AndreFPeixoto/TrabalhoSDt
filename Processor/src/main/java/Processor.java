@@ -5,7 +5,7 @@ import java.rmi.registry.Registry;
 public class Processor {
 
     public static void main(String[] args) {
-        try {
+        /*try {
             int port = 2100;
             Registry r = LocateRegistry.createRegistry(port);
             ScriptManager manager = new ScriptManager(port);
@@ -13,6 +13,7 @@ public class Processor {
             System.out.println("Processor " + port + " is ready");
         } catch (RemoteException e) {
             e.printStackTrace();
-        }
+        }*/
+        ResourcesManager.hasResources();
     }
 }
