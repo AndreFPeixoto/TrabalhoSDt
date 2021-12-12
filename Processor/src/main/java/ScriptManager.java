@@ -22,6 +22,8 @@ public class ScriptManager extends UnicastRemoteObject implements ScriptManagerI
         resourcesThread.start();
         HeartbeatReceiver heartbeatReceiver = new HeartbeatReceiver();
         heartbeatReceiver.start();
+        HeartbeatSender heartbeatSender = new HeartbeatSender();
+        heartbeatSender.start();
     }
 
     @Override
@@ -133,6 +135,11 @@ public class ScriptManager extends UnicastRemoteObject implements ScriptManagerI
                     socket.send(packet);
                     socket.close();
                 } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                try {
+                    Thread.sleep(15000);
+                } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             }

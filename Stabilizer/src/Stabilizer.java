@@ -6,7 +6,7 @@ public class Stabilizer {
 
     public static void main(String[] args) {
         try {
-            Registry registry = LocateRegistry.createRegistry(2400);
+            Registry registry = LocateRegistry.createRegistry(2300);
             ProcessorManager manager = new ProcessorManager();
             registry.rebind("processormanager", manager);
             System.out.println("Stabilizer is ready");

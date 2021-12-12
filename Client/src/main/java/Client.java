@@ -1,8 +1,3 @@
-import com.jcraft.jsch.ChannelSftp;
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.SftpException;
-
-import java.io.*;
 import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
@@ -10,15 +5,24 @@ import java.rmi.RemoteException;
 
 public class Client {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
+        Thread thread = new Thread() {
+
+        };
+        thread.start();
+        Thread.sleep(10000);
         try {
             String fileName = "example.bat";
-            if (uploadScript(fileName)) {
+            if (Utils.uploadScript(fileName)) {
                 System.out.println("File uploaded to Loader");
-                ScriptManagerInterface scriptManager = (ScriptManagerInterface) Naming.lookup("rmi://localhost:2100/scriptmanager");
                 Script s = new Script(fileName);
+                System.out.println("send request to stabilizer");
+                ProcessorManagerInterface processorManager = (ProcessorManagerInterface) Naming.lookup("rmi://localhost:2300/processormanager");
+                int processorID = processorManager.requestProcess(s);
+                System.out.println("send request to Processor");
+                ScriptManagerInterface scriptManager = (ScriptManagerInterface) Naming.lookup("rmi://localhost:" + processorID + "/scriptmanager");
                 String id = scriptManager.processScript(s);
-                System.out.println("Process request sent to Processor");
+                System.out.println("send request to Brain");
                 ModelManagerInterface modelManager = (ModelManagerInterface) Naming.lookup("rmi://localhost:2200/modelmanager");
                 Model model = modelManager.getModel(id);
                 System.out.println(model.getOutput());
@@ -27,21 +31,6 @@ public class Client {
             }
         } catch (MalformedURLException | NotBoundException | RemoteException e) {
             e.printStackTrace();
-        }
-    }
-
-    public static boolean uploadScript(String name) {
-        try {
-            SftpConnection sftp = new SftpConnection();
-            ChannelSftp channel = sftp.setupJsch();
-            channel.connect();
-            channel.put("scripts/" + name, "scripts/" + name);
-            channel.disconnect();
-            sftp.closeSession();
-            return true;
-        } catch (JSchException | SftpException e) {
-            e.printStackTrace();
-            return false;
         }
     }
 }
