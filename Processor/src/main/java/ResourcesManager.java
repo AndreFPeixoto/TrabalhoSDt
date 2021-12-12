@@ -18,7 +18,7 @@ public class ResourcesManager {
         return (usedRam / maxMemory) * 100;
     }
 
-    private static double getCPU() {
+    public static double getCPU() {
         try {
             MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
             ObjectName name = ObjectName.getInstance("java.lang:type=OperatingSystem");

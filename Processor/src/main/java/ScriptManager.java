@@ -17,9 +17,12 @@ public class ScriptManager extends UnicastRemoteObject implements ScriptManagerI
 
     int port;
     List<Script> scripts = new ArrayList<>();
+    List<Double> cpu = new ArrayList<>();
 
     protected ScriptManager(int port) throws RemoteException {
         this.port = port;
+        ResourcesThread resourcesThread = new ResourcesThread();
+        resourcesThread.start();
     }
 
     @Override
@@ -29,7 +32,7 @@ public class ScriptManager extends UnicastRemoteObject implements ScriptManagerI
         s.setId(id);
         try {
             if (ResourcesManager.hasResources()) {
-                if (downloadScript(s.getName())) {
+                if (Utils.downloadScript(s.getName())) {
                     Process p = Runtime.getRuntime().exec("scripts/" + s.getName());
                     StringBuilder output = new StringBuilder();
                     BufferedReader reader = new BufferedReader(
@@ -58,18 +61,22 @@ public class ScriptManager extends UnicastRemoteObject implements ScriptManagerI
         return id;
     }
 
-    private boolean downloadScript(String name) {
-        try {
-            SftpConnection sftp = new SftpConnection();
-            ChannelSftp channel = sftp.setupJsch();
-            channel.connect();
-            channel.get("scripts/" + name, "scripts/" + name);
-            channel.disconnect();
-            sftp.closeSession();
-            return true;
-        } catch (JSchException | SftpException e) {
-            e.printStackTrace();
-            return false;
+    public class ResourcesThread extends Thread {
+        @Override
+        public void run() {
+            int aux = 0;
+            while (true) {
+                if (aux == 9) {
+                    aux = 0;
+                }
+                cpu.add(aux, ResourcesManager.getCPU());
+                aux++;
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 }

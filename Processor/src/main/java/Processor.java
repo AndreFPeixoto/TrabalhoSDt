@@ -6,7 +6,7 @@ public class Processor {
 
     public static void main(String[] args) {
         try {
-            int port = 2100;
+            int port = Integer.parseInt(args[0]);
             Registry r = LocateRegistry.createRegistry(port);
             ScriptManager manager = new ScriptManager(port);
             r.rebind("scriptmanager", manager);
