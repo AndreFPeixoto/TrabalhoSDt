@@ -1,15 +1,11 @@
-import com.jcraft.jsch.ChannelSftp;
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.SftpException;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.net.*;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -18,11 +14,14 @@ public class ScriptManager extends UnicastRemoteObject implements ScriptManagerI
     int port;
     List<Script> scripts = new ArrayList<>();
     List<Double> cpu = new ArrayList<>();
+    HashMap<Integer, Heartbeat> heartbeats = new HashMap<>();
 
     protected ScriptManager(int port) throws RemoteException {
         this.port = port;
         ResourcesThread resourcesThread = new ResourcesThread();
         resourcesThread.start();
+        HeartbeatReceiver heartbeatReceiver = new HeartbeatReceiver();
+        heartbeatReceiver.start();
     }
 
     @Override
@@ -30,33 +29,17 @@ public class ScriptManager extends UnicastRemoteObject implements ScriptManagerI
         UUID uuid = UUID.randomUUID();
         String id = uuid.toString();
         s.setId(id);
-        try {
-            if (ResourcesManager.hasResources()) {
-                if (Utils.downloadScript(s.getName())) {
-                    Process p = Runtime.getRuntime().exec("scripts/" + s.getName());
-                    StringBuilder output = new StringBuilder();
-                    BufferedReader reader = new BufferedReader(
-                            new InputStreamReader(p.getInputStream()));
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        output.append(line).append("\n");
-                    }
-                    int exitVal = p.waitFor();
-                    if (exitVal == 0) {
-                        System.out.println("Success!");
-                        Model m = new Model(port, id, output);
-                        ModelManagerInterface modelManager = (ModelManagerInterface) Naming.lookup("rmi://localhost:2200/modelmanager");
-                        modelManager.sendModel(m);
-                    }
-                } else {
-                    System.out.println("Error downloading the script");
-                }
+        if (scripts.isEmpty()) {
+            if (getAverage() < 80) {
+                runScript(s);
             } else {
-                System.out.println("I don't have any resources");
                 scripts.add(s);
+                ScriptsThread scriptsThread = new ScriptsThread();
+                scriptsThread.start();
             }
-        } catch (IOException | InterruptedException | NotBoundException e) {
-            e.printStackTrace();
+        } else {
+            ScriptsThread scriptsThread = new ScriptsThread();
+            scriptsThread.start();
         }
         return id;
     }
@@ -78,5 +61,115 @@ public class ScriptManager extends UnicastRemoteObject implements ScriptManagerI
                 }
             }
         }
+    }
+
+    public class ScriptsThread extends Thread {
+        @Override
+        public void run() {
+            while (true) {
+                if (!scripts.isEmpty()) {
+                    if (getAverage() < 80) {
+                        Script s = scripts.get(0);
+                        runScript(s);
+                        scripts.remove(0);
+                    }
+                }
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    public class HeartbeatReceiver extends Thread {
+        protected MulticastSocket socket;
+        protected byte[] buf = new byte[2000];
+
+        @Override
+        public void run() {
+            try {
+                socket = new MulticastSocket(4446);
+                InetAddress group = InetAddress.getByName("230.0.0.0");
+                socket.joinGroup(group);
+                while (true) {
+                    DatagramPacket packet = new DatagramPacket(buf, buf.length);
+                    socket.receive(packet);
+                    Heartbeat heartbeat = (Heartbeat) Utils.convertFromBytes(buf);
+                    heartbeats.put(heartbeat.getProcessorID(), heartbeat);
+                }
+            } catch (IOException | ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public class HeartbeatSender extends Thread {
+        protected DatagramSocket socket;
+        byte[] data;
+
+        @Override
+        public void run() {
+            while (true) {
+                double cpu = getAverage();
+                double ram = 0;
+                double disk = 0;
+                HashMap<Long, String> threads = new HashMap<>();
+                Resources resources = new Resources(disk, ram, cpu);
+                Thread.getAllStackTraces().keySet().forEach((t) ->
+                        threads.put(t.getId(), t.getState().toString())
+                );
+                Heartbeat heartbeat = new Heartbeat(port, threads, resources);
+                try {
+                    socket = new DatagramSocket();
+                    InetAddress group = InetAddress.getByName("230.0.0.0");
+                    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                    ObjectOutputStream oos = new ObjectOutputStream(bos);
+                    oos.writeObject(heartbeat);
+                    oos.flush();
+                    data = bos.toByteArray();
+                    DatagramPacket packet = new DatagramPacket(data, data.length, group, 4446);
+                    socket.send(packet);
+                    socket.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    public void runScript(Script s) {
+        try {
+            if (Utils.downloadScript(s.getName())) {
+                Process p = Runtime.getRuntime().exec("scripts/" + s.getName());
+                StringBuilder output = new StringBuilder();
+                BufferedReader reader = new BufferedReader(
+                        new InputStreamReader(p.getInputStream()));
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    output.append(line).append("\n");
+                }
+                int exitVal = p.waitFor();
+                if (exitVal == 0) {
+                    System.out.println("Success!");
+                    Model m = new Model(port, s.getId(), output);
+                    ModelManagerInterface modelManager = (ModelManagerInterface) Naming.lookup("rmi://localhost:2200/modelmanager");
+                    modelManager.sendModel(m);
+                }
+            } else {
+                System.out.println("Error downloading the script");
+            }
+        } catch (NotBoundException | IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public double getAverage() {
+        double total = 0;
+        for (Double i : cpu) {
+            total += i;
+        }
+        return total / cpu.size();
     }
 }
