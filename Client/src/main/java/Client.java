@@ -6,12 +6,14 @@ import java.rmi.RemoteException;
 public class Client {
 
     public static void main(String[] args) throws InterruptedException {
-        Thread thread = new Thread() {
-            @Override
-            public void run() {
-
-            }
-        };
+        Thread thread = new Thread(() -> {
+            Loader.main(new String[0]);
+            Stabilizer.main(new String[0]);
+            Brain.main(new String[0]);
+            Processor.main(new String[]{"2101"});
+            Processor.main(new String[]{"2102"});
+            Processor.main(new String[]{"2103"});
+        });
         thread.start();
         Thread.sleep(10000);
         try {

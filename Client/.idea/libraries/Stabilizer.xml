@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="Stabilizer">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/../Stabilizer/out/artifacts/Stabilizer/Stabilizer.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
