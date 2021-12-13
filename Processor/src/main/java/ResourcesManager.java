@@ -1,6 +1,4 @@
-import javax.management.*;
 import java.io.File;
-import java.lang.management.ManagementFactory;
 
 public class ResourcesManager {
 
@@ -18,19 +16,7 @@ public class ResourcesManager {
         return (usedRam / maxMemory) * 100;
     }
 
-    public static double getCPU() {
-        try {
-            MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
-            ObjectName name = ObjectName.getInstance("java.lang:type=OperatingSystem");
-            AttributeList list = mbs.getAttributes(name, new String[]{"ProcessCpuLoad"});
-            if (list.isEmpty()) return Double.NaN;
-            Attribute att = (Attribute) list.get(0);
-            Double value = (Double) att.getValue();
-            if (value == -1.0) return Double.NaN;
-            return ((int) (value * 1000) / 10.0);
-        } catch (ReflectionException | MalformedObjectNameException | InstanceNotFoundException e) {
-            e.printStackTrace();
-            return 0;
-        }
+    public static int getCPU() {
+        return (int) (Math.random() * (100 - 1 + 1) + 1);
     }
 }

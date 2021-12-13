@@ -12,7 +12,7 @@ public class Client {
             Processor.main(new String[]{"2103"});
         });
         thread.start();
-        Thread.sleep(10000);
+        Thread.sleep(7000);
         try {
             String fileName = "example.bat";
             if (Utils.uploadScript(fileName)) {

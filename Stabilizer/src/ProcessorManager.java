@@ -24,15 +24,11 @@ public class ProcessorManager extends UnicastRemoteObject implements ProcessorMa
             double disk = 0;
             int processor = 0;
             for (Heartbeat h : processors.values()) {
-                System.out.println(h.getAvailable().getCpu());
                 if (h.getAvailable().getCpu() < cpu) {
                     cpu = h.getAvailable().getCpu();
                     processor = h.getProcessorID();
-                    System.out.println("Processor = " + processor);
-                } else {
-                    System.out.println(h.processorID + " have " + h.getAvailable().getCpu());
                 }
-                System.out.println("Stabilizer: I know processor " + h.getProcessorID());
+                System.out.println("I know processor " + h.getProcessorID());
             }
             return processor;
         } else {
@@ -54,7 +50,6 @@ public class ProcessorManager extends UnicastRemoteObject implements ProcessorMa
                     DatagramPacket packet = new DatagramPacket(buf, buf.length);
                     socket.receive(packet);
                     Heartbeat heartbeat = (Heartbeat) Utils.convertFromBytes(buf);
-                    //System.out.println(heartbeat.getAvailable().getCpu());
                     processors.put(heartbeat.getProcessorID(), heartbeat);
                 }
             } catch (IOException | ClassNotFoundException e) {

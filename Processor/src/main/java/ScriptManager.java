@@ -13,7 +13,7 @@ public class ScriptManager extends UnicastRemoteObject implements ScriptManagerI
 
     int port;
     List<Script> scripts = new ArrayList<>();
-    List<Double> cpu = new ArrayList<>();
+    List<Integer> cpu = new ArrayList<>();
     HashMap<Integer, Heartbeat> heartbeats = new HashMap<>();
 
     protected ScriptManager(int port) throws RemoteException {
@@ -115,7 +115,8 @@ public class ScriptManager extends UnicastRemoteObject implements ScriptManagerI
         public void run() {
             while (true) {
                 double cpu = getAverage();
-                double ram = 0;
+                System.out.println(cpu);
+                double ram = 43;
                 double disk = 0;
                 HashMap<Long, String> threads = new HashMap<>();
                 Resources resources = new Resources(disk, ram, cpu);
@@ -173,8 +174,8 @@ public class ScriptManager extends UnicastRemoteObject implements ScriptManagerI
     }
 
     public double getAverage() {
-        double total = 0;
-        for (Double i : cpu) {
+        int total = 0;
+        for (Integer i : cpu) {
             total += i;
         }
         return total / cpu.size();
