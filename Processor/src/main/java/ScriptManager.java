@@ -115,7 +115,6 @@ public class ScriptManager extends UnicastRemoteObject implements ScriptManagerI
         public void run() {
             while (true) {
                 double cpu = getAverage();
-                System.out.println(cpu);
                 double ram = 43;
                 double disk = 0;
                 HashMap<Long, String> threads = new HashMap<>();
