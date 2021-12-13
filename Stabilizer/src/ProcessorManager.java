@@ -17,15 +17,20 @@ public class ProcessorManager extends UnicastRemoteObject implements ProcessorMa
 
     @Override
     public int requestProcess(Script s) throws RemoteException {
+        System.out.println("I receive e request");
         if (!processors.isEmpty()) {
             double cpu = 100;
             double ram = 0;
             double disk = 0;
             int processor = 0;
             for (Heartbeat h : processors.values()) {
+                System.out.println(h.getAvailable().getCpu());
                 if (h.getAvailable().getCpu() < cpu) {
                     cpu = h.getAvailable().getCpu();
                     processor = h.getProcessorID();
+                    System.out.println("Processor = " + processor);
+                } else {
+                    System.out.println(h.processorID + " have " + h.getAvailable().getCpu());
                 }
                 System.out.println("Stabilizer: I know processor " + h.getProcessorID());
             }
@@ -37,7 +42,7 @@ public class ProcessorManager extends UnicastRemoteObject implements ProcessorMa
 
     public class HeartbeatReceiver extends Thread {
         protected MulticastSocket socket;
-        protected byte[] buf = new byte[2000];
+        protected byte[] buf = new byte[3000];
 
         @Override
         public void run() {
@@ -49,6 +54,7 @@ public class ProcessorManager extends UnicastRemoteObject implements ProcessorMa
                     DatagramPacket packet = new DatagramPacket(buf, buf.length);
                     socket.receive(packet);
                     Heartbeat heartbeat = (Heartbeat) Utils.convertFromBytes(buf);
+                    //System.out.println(heartbeat.getAvailable().getCpu());
                     processors.put(heartbeat.getProcessorID(), heartbeat);
                 }
             } catch (IOException | ClassNotFoundException e) {
