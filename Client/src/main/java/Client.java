@@ -7,7 +7,10 @@ public class Client {
 
     public static void main(String[] args) throws InterruptedException {
         Thread thread = new Thread() {
+            @Override
+            public void run() {
 
+            }
         };
         thread.start();
         Thread.sleep(10000);
