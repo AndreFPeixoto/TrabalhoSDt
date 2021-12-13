@@ -8,6 +8,21 @@ import java.io.ObjectInputStream;
 
 public class Utils {
 
+    public static boolean uploadScript(String name) {
+        try {
+            SftpConnection sftp = new SftpConnection();
+            ChannelSftp channel = sftp.setupJsch();
+            channel.connect();
+            channel.put("scripts/" + name, "scripts/" + name);
+            channel.disconnect();
+            sftp.closeSession();
+            return true;
+        } catch (JSchException | SftpException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     public static boolean downloadScript(String name) {
         try {
             SftpConnection sftp = new SftpConnection();
