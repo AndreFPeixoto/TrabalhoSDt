@@ -1,16 +1,17 @@
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.List;
 
 public class Heartbeat implements Serializable {
 
     int processorID;
-    HashMap<Long, String> threads;
-    Resources available;
+    List<Script> tasks;
+    double cpu;
 
-    public Heartbeat(int processorID, HashMap<Long, String> threads, Resources available) {
+    public Heartbeat(int processorID, List<Script> tasks, double cpu) {
         this.processorID = processorID;
-        this.threads = threads;
-        this.available = available;
+        this.tasks = tasks;
+        this.cpu = cpu;
     }
 
     public int getProcessorID() {
@@ -21,19 +22,19 @@ public class Heartbeat implements Serializable {
         this.processorID = processorID;
     }
 
-    public HashMap<Long, String> getThreads() {
-        return threads;
+    public List<Script> getTasks() {
+        return tasks;
     }
 
-    public void setThreads(HashMap<Long, String> threads) {
-        this.threads = threads;
+    public void setTasks(List<Script> tasks) {
+        this.tasks = tasks;
     }
 
-    public Resources getAvailable() {
-        return available;
+    public double getCpu() {
+        return cpu;
     }
 
-    public void setAvailable(Resources available) {
-        this.available = available;
+    public void setCpu(double cpu) {
+        this.cpu = cpu;
     }
 }

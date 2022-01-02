@@ -32,7 +32,7 @@ public class ScriptManager extends UnicastRemoteObject implements ScriptManagerI
         String id = uuid.toString();
         s.setId(id);
         if (scripts.isEmpty()) {
-            if (getAverage() < 80) {
+            if (getAverage() > 25) {
                 runScript(s);
             } else {
                 scripts.add(s);
@@ -46,6 +46,27 @@ public class ScriptManager extends UnicastRemoteObject implements ScriptManagerI
         return id;
     }
 
+    @Override
+    public void resumeRequests(int processor) throws RemoteException {
+        try {
+            List<Script> pending = heartbeats.get(processor).getTasks();
+            ModelManagerInterface modelManager = (ModelManagerInterface) Naming.lookup("rmi://localhost:2200/modelmanager");
+            List<String> requests = modelManager.getCompletedRequests(processor);
+            List<Script> found = new ArrayList<>();
+            for (String r : requests) {
+                for (Script p : pending) {
+                    if (p.getId().equals(r)) {
+                        found.add(p);
+                    }
+                }
+            }
+            pending.removeAll(found);
+            executeUnfinishedReq(pending);
+        } catch (NotBoundException | MalformedURLException e) {
+            e.printStackTrace();
+        }
+    }
+
     public class ResourcesThread extends Thread {
         @Override
         public void run() {
@@ -54,7 +75,7 @@ public class ScriptManager extends UnicastRemoteObject implements ScriptManagerI
                 if (aux == 9) {
                     aux = 0;
                 }
-                cpu.add(aux, ResourcesManager.getCPU());
+                cpu.add(aux, ResourcesManager.getFreeCpu());
                 aux++;
                 try {
                     Thread.sleep(2000);
@@ -70,7 +91,7 @@ public class ScriptManager extends UnicastRemoteObject implements ScriptManagerI
         public void run() {
             while (true) {
                 if (!scripts.isEmpty()) {
-                    if (getAverage() < 80) {
+                    if (getAverage() > 25) {
                         Script s = scripts.get(0);
                         runScript(s);
                         scripts.remove(0);
@@ -115,14 +136,14 @@ public class ScriptManager extends UnicastRemoteObject implements ScriptManagerI
         public void run() {
             while (true) {
                 double cpu = getAverage();
-                double ram = 43;
-                double disk = 0;
+                /*
                 HashMap<Long, String> threads = new HashMap<>();
-                Resources resources = new Resources(disk, ram, cpu);
-                Thread.getAllStackTraces().keySet().forEach((t) ->
-                        threads.put(t.getId(), t.getState().toString())
-                );
-                Heartbeat heartbeat = new Heartbeat(port, threads, resources);
+                Thread.getAllStackTraces().keySet().forEach((t) -> {
+                            threads.put(t.getId(), t.getState().toString());
+                            System.out.println(t.getId() + "/" + t.getName() + "/" + t.getState());
+                        }
+                );*/
+                Heartbeat heartbeat = new Heartbeat(port, scripts, cpu);
                 try {
                     socket = new DatagramSocket();
                     InetAddress group = InetAddress.getByName("230.0.0.0");
@@ -174,9 +195,14 @@ public class ScriptManager extends UnicastRemoteObject implements ScriptManagerI
 
     public double getAverage() {
         int total = 0;
+
         for (Integer i : cpu) {
             total += i;
         }
         return total / cpu.size();
+    }
+
+    public void executeUnfinishedReq(List<Script> scripts) {
+        scripts.addAll(scripts);
     }
 }

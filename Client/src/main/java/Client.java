@@ -30,6 +30,8 @@ public class Client {
                     ModelManagerInterface modelManager = (ModelManagerInterface) Naming.lookup("rmi://localhost:2200/modelmanager");
                     Model model = modelManager.getModel(id);
                     System.out.println(model.getOutput());
+                } else {
+                    System.out.println("no processor available");
                 }
             } else {
                 System.out.println("Failed to upload script");
