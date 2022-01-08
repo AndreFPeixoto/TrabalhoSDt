@@ -238,9 +238,9 @@ public class ScriptManager extends UnicastRemoteObject implements ScriptManagerI
                 }
                 int exitVal = p.waitFor();
                 if (exitVal == 0) {
-                    System.out.println("Success!");
+                    int b = (int) (Math.random() * (brains.size() + 1) + 0);
                     Model m = new Model(port, s.getId(), output);
-                    ModelManagerInterface modelManager = (ModelManagerInterface) Naming.lookup("rmi://localhost:2200/modelmanager");
+                    ModelManagerInterface modelManager = (ModelManagerInterface) Naming.lookup("rmi://localhost:" + brains.get(b) + "/modelmanager");
                     modelManager.sendModel(m);
                 }
             } else {
