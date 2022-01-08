@@ -70,6 +70,11 @@ public class ScriptManager extends UnicastRemoteObject implements ScriptManagerI
         }
     }
 
+    @Override
+    public HashMap<Integer, Heartbeat> recovery() throws RemoteException {
+        return heartbeats;
+    }
+
     public class ResourcesThread extends Thread {
         @Override
         public void run() {
