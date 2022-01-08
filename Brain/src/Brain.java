@@ -6,10 +6,11 @@ public class Brain {
 
     public static void main(String[] args) {
         try {
-            Registry r = LocateRegistry.createRegistry(2200);
-            ModelManager manager = new ModelManager();
+            int port = Integer.parseInt(args[0]);
+            Registry r = LocateRegistry.createRegistry(port);
+            ModelManager manager = new ModelManager(port);
             r.rebind("modelmanager", manager);
-            System.out.println("Brain is ready!");
+            System.out.println("Brain " + port + " is ready!");
         } catch (RemoteException e) {
             e.printStackTrace();
         }
