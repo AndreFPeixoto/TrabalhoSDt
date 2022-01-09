@@ -12,23 +12,26 @@ public class Client {
             Processor.main(new String[]{"2103"});
         });
         thread.start();
-        Thread.sleep(7000);
+        Thread.sleep(10000);
         try {
             String fileName = "example.bat";
             if (Utils.uploadScript(fileName)) {
-                System.out.println("File uploaded to Loader");
+                System.out.println("Client upload file to Loader");
                 Script s = new Script(fileName);
-                System.out.println("send request to stabilizer");
+                System.out.println("Client send request to Stabilizer");
                 ProcessorManagerInterface processorManager = (ProcessorManagerInterface) Naming.lookup("rmi://localhost:2500/processormanager");
                 int processorID = processorManager.requestProcess(s);
-                System.out.println("Processor port: " + processorID);
+                System.out.println("Stabilizer response Processor " + processorID);
                 if (processorID != 0) {
-                    System.out.println("send request to Processor");
+                    System.out.println("Client send request to processor " + processorID);
                     ScriptManagerInterface scriptManager = (ScriptManagerInterface) Naming.lookup("rmi://localhost:" + processorID + "/scriptmanager");
                     String id = scriptManager.processScript(s);
+                    System.out.println("Processor assigned id " + id + " to Client request");
+                    System.out.println("Client request Brain to Stabilizer");
                     int brainID = processorManager.requestBrain();
                     if (brainID != 0) {
-                        System.out.println("send request to Brain " + brainID);
+                        System.out.println("Stabilizer response Brain " + brainID);
+                        System.out.println("Client send request to Brain " + brainID);
                         ModelManagerInterface modelManager = (ModelManagerInterface) Naming.lookup("rmi://localhost:" + brainID + "/modelmanager");
                         Model model = modelManager.requestModel(id);
                         System.out.println(model.getOutput());

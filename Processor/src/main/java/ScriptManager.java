@@ -242,6 +242,7 @@ public class ScriptManager extends UnicastRemoteObject implements ScriptManagerI
                 if (exitVal == 0) {
                     int b = (int) (Math.random() * (brains.size() - 1 + 1) + 0);
                     Model m = new Model(port, s.getId(), output);
+                    System.out.println("Processor send model to brain " + brains.keySet().toArray()[b]);
                     ModelManagerInterface modelManager = (ModelManagerInterface) Naming.lookup("rmi://localhost:" + brains.keySet().toArray()[b] + "/modelmanager");
                     modelManager.sendModel(m);
                 }
@@ -256,10 +257,14 @@ public class ScriptManager extends UnicastRemoteObject implements ScriptManagerI
     public double getAverage() {
         int total = 0;
 
-        for (Integer i : cpu) {
-            total += i;
+        if (cpu.size()>0) {
+            for (Integer i : cpu) {
+                total += i;
+            }
+            return total / cpu.size();
+        } else {
+            return 0;
         }
-        return total / cpu.size();
     }
 
     public void executeUnfinishedReq(List<Script> scripts) {
