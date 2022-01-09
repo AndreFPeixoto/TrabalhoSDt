@@ -27,6 +27,12 @@ public class ProcessorManager extends UnicastRemoteObject implements ProcessorMa
         return getProcessor();
     }
 
+    @Override
+    public int requestBrain() throws RemoteException {
+        int b = (int) (Math.random() * (brains.size() - 1 + 1) + 0);
+        return (int) brains.keySet().toArray()[b];
+    }
+
     public class HeartbeatReceiver extends Thread {
         protected MulticastSocket socket;
         protected byte[] buf = new byte[3000];

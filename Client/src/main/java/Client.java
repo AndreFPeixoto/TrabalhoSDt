@@ -26,10 +26,13 @@ public class Client {
                     System.out.println("send request to Processor");
                     ScriptManagerInterface scriptManager = (ScriptManagerInterface) Naming.lookup("rmi://localhost:" + processorID + "/scriptmanager");
                     String id = scriptManager.processScript(s);
-                    System.out.println("send request to Brain");
-                    ModelManagerInterface modelManager = (ModelManagerInterface) Naming.lookup("rmi://localhost:2200/modelmanager");
-                    Model model = modelManager.requestModel(id);
-                    System.out.println(model.getOutput());
+                    int brainID = processorManager.requestBrain();
+                    if (brainID != 0) {
+                        System.out.println("send request to Brain " + brainID);
+                        ModelManagerInterface modelManager = (ModelManagerInterface) Naming.lookup("rmi://localhost:" + brainID + "/modelmanager");
+                        Model model = modelManager.requestModel(id);
+                        System.out.println(model.getOutput());
+                    }
                 } else {
                     System.out.println("no processor available");
                 }
