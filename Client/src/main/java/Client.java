@@ -28,7 +28,7 @@ public class Client {
                     String id = scriptManager.processScript(s);
                     System.out.println("send request to Brain");
                     ModelManagerInterface modelManager = (ModelManagerInterface) Naming.lookup("rmi://localhost:2200/modelmanager");
-                    Model model = modelManager.getModel(id);
+                    Model model = modelManager.requestModel(id);
                     System.out.println(model.getOutput());
                 } else {
                     System.out.println("no processor available");

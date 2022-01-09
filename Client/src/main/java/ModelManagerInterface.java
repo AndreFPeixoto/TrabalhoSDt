@@ -6,9 +6,11 @@ public interface ModelManagerInterface extends Remote {
 
     void sendModel(Model m) throws RemoteException;
 
-    Model getModel(String requestID) throws RemoteException;
+    Model requestModel(String requestID) throws RemoteException;
 
     List<String> getCompletedRequests(int processor) throws RemoteException;
 
     void setModel(Model m) throws RemoteException;
+
+    Model getModel(String requestID) throws RemoteException;
 }

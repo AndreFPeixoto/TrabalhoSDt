@@ -29,8 +29,12 @@ public class ModelManager extends UnicastRemoteObject implements ModelManagerInt
     }
 
     @Override
-    public Model getModel(String requestID) throws RemoteException {
-        return models.get(requestID);
+    public Model requestModel(String requestID) throws RemoteException {
+        if (models.containsKey(requestID)) {
+            return models.get(requestID);
+        } else {
+            return askModel(requestID);
+        }
     }
 
     @Override
@@ -47,6 +51,11 @@ public class ModelManager extends UnicastRemoteObject implements ModelManagerInt
     @Override
     public void setModel(Model m) throws RemoteException {
         models.put(m.getRequestID(), m);
+    }
+
+    @Override
+    public Model getModel(String requestID) throws RemoteException {
+        return models.get(requestID);
     }
 
     public class BrainSender extends Thread {
@@ -137,12 +146,27 @@ public class ModelManager extends UnicastRemoteObject implements ModelManagerInt
 
     public void shareModel(Model m) {
         try {
-            for (int b: brains.keySet()) {
+            for (int b : brains.keySet()) {
                 ModelManagerInterface manager = (ModelManagerInterface) Naming.lookup("rmi://localhost:" + b + "/modelmanager");
                 manager.setModel(m);
             }
         } catch (MalformedURLException | NotBoundException | RemoteException e) {
             e.printStackTrace();
         }
+    }
+
+    public Model askModel(String requestID) {
+        try {
+            for (int b : brains.keySet()) {
+                ModelManagerInterface manager = (ModelManagerInterface) Naming.lookup("rmi://localhost:" + b + "/modelmanager");
+                Model m = manager.getModel(requestID);
+                if (m != null) {
+                    return m;
+                }
+            }
+        } catch (MalformedURLException | NotBoundException | RemoteException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }
