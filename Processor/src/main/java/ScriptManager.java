@@ -23,10 +23,10 @@ public class ScriptManager extends UnicastRemoteObject implements ScriptManagerI
         resourcesThread.start();
         HeartbeatReceiver heartbeatReceiver = new HeartbeatReceiver();
         heartbeatReceiver.start();
-        HeartbeatSender heartbeatSender = new HeartbeatSender();
-        heartbeatSender.start();
         BrainReceiver brainReceiver = new BrainReceiver();
         brainReceiver.start();
+        HeartbeatSender heartbeatSender = new HeartbeatSender();
+        heartbeatSender.start();
     }
 
     @Override
@@ -189,10 +189,12 @@ public class ScriptManager extends UnicastRemoteObject implements ScriptManagerI
                     DatagramPacket packet = new DatagramPacket(buf, buf.length);
                     socket.receive(packet);
                     int brain = (int) Utils.convertFromBytes(buf);
-                    if (brain != port) {
-                        BrainCounter counter = new BrainCounter(brain);
-                        brains.put(brain, counter);
+                    if (brains.containsKey(brain)) {
+                        Thread bc = brains.get(brain);
+                        bc.stop();
                     }
+                    BrainCounter counter = new BrainCounter(brain);
+                    brains.put(brain, counter);
                 }
             } catch (IOException | ClassNotFoundException e) {
                 e.printStackTrace();
@@ -238,9 +240,10 @@ public class ScriptManager extends UnicastRemoteObject implements ScriptManagerI
                 }
                 int exitVal = p.waitFor();
                 if (exitVal == 0) {
-                    int b = (int) (Math.random() * (brains.size() + 1) + 0);
+                    int b = (int) (Math.random() * (brains.size() - 1 + 1) + 0);
                     Model m = new Model(port, s.getId(), output);
-                    ModelManagerInterface modelManager = (ModelManagerInterface) Naming.lookup("rmi://localhost:" + brains.get(b) + "/modelmanager");
+                    System.out.println(brains.keySet().toArray()[b]);
+                    ModelManagerInterface modelManager = (ModelManagerInterface) Naming.lookup("rmi://localhost:" + brains.keySet().toArray()[b] + "/modelmanager");
                     modelManager.sendModel(m);
                 }
             } else {

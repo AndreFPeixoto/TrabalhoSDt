@@ -80,7 +80,7 @@ public class ModelManager extends UnicastRemoteObject implements ModelManagerInt
                     e.printStackTrace();
                 }
                 try {
-                    Thread.sleep(15000);
+                    Thread.sleep(7000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -103,6 +103,10 @@ public class ModelManager extends UnicastRemoteObject implements ModelManagerInt
                     socket.receive(packet);
                     int brain = (int) convertFromBytes(buf);
                     if (brain != port) {
+                        if (brains.containsKey(brain)) {
+                            Thread bc = brains.get(brain);
+                            bc.stop();
+                        }
                         BrainCounter counter = new BrainCounter(brain);
                         brains.put(brain, counter);
                     }

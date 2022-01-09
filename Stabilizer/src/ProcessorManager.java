@@ -13,10 +13,13 @@ public class ProcessorManager extends UnicastRemoteObject implements ProcessorMa
 
     HashMap<Integer, Heartbeat> processors = new HashMap<>();
     HashMap<Integer, Thread> counter = new HashMap<>();
+    HashMap<Integer, Thread> brains = new HashMap<>();
 
     protected ProcessorManager() throws RemoteException {
         HeartbeatReceiver heartbeatReceiver = new HeartbeatReceiver();
         heartbeatReceiver.start();
+        BrainReceiver brainReceiver = new BrainReceiver();
+        brainReceiver.start();
     }
 
     @Override
@@ -74,6 +77,58 @@ public class ProcessorManager extends UnicastRemoteObject implements ProcessorMa
                     } catch (NotBoundException | MalformedURLException | RemoteException e) {
                         e.printStackTrace();
                     }
+                    this.stop();
+                }
+                count++;
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    public class BrainReceiver extends Thread {
+        protected MulticastSocket socket;
+        protected byte[] buf = new byte[2000];
+
+        @Override
+        public void run() {
+            try {
+                socket = new MulticastSocket(4446);
+                InetAddress group = InetAddress.getByName("233.0.0.0");
+                socket.joinGroup(group);
+                while (true) {
+                    DatagramPacket packet = new DatagramPacket(buf, buf.length);
+                    socket.receive(packet);
+                    int brain = (int) Utils.convertFromBytes(buf);
+                    if (brains.containsKey(brain)) {
+                        Thread bc = brains.get(brain);
+                        bc.stop();
+                    }
+                    BrainCounter counter = new BrainCounter(brain);
+                    brains.put(brain, counter);
+                }
+            } catch (IOException | ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public class BrainCounter extends Thread {
+        int id;
+
+        public BrainCounter(int id) {
+            this.id = id;
+        }
+
+        @Override
+        public void run() {
+            int count = 0;
+            while (true) {
+                if (count > 30) {
+                    brains.remove(id);
                     this.stop();
                 }
                 count++;
