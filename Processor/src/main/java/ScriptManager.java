@@ -41,6 +41,7 @@ public class ScriptManager extends UnicastRemoteObject implements ScriptManagerI
                 scripts.add(s);
                 ScriptsThread scriptsThread = new ScriptsThread();
                 scriptsThread.start();
+                System.out.println("Processor add script to waiting list");
             }
         } else {
             ScriptsThread scriptsThread = new ScriptsThread();

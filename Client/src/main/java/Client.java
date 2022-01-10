@@ -31,7 +31,8 @@ public class Client {
                     int brainID = processorManager.requestBrain();
                     if (brainID != 0) {
                         System.out.println("Stabilizer response Brain " + brainID);
-                        System.out.println("Client send request to Brain " + brainID);
+                        System.out.println("Client send request to Brain " + brainID + " after 10 seconds");
+                        Thread.sleep(10000);
                         ModelManagerInterface modelManager = (ModelManagerInterface) Naming.lookup("rmi://localhost:" + brainID + "/modelmanager");
                         Model model = modelManager.requestModel(id);
                         if (model != null) {
