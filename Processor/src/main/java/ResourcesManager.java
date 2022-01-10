@@ -37,7 +37,7 @@ public class ResourcesManager {
             }
             int exitVal = p.waitFor();
             if (exitVal == 0) {
-                return Integer.parseInt(getNbr(output.toString()));
+                return 100 - Integer.parseInt(getNbr(output.toString()));
             }
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();

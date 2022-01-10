@@ -34,7 +34,11 @@ public class Client {
                         System.out.println("Client send request to Brain " + brainID);
                         ModelManagerInterface modelManager = (ModelManagerInterface) Naming.lookup("rmi://localhost:" + brainID + "/modelmanager");
                         Model model = modelManager.requestModel(id);
-                        System.out.println(model.getOutput());
+                        if (model != null) {
+                            System.out.println(model.getOutput());
+                        } else {
+                            System.out.println("Não foi possivel obter resposta");
+                        }
                     }
                 } else {
                     System.out.println("no processor available");
